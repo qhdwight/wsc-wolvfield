@@ -29,7 +29,7 @@ Silk.NET.Core.Native
 Silk.NET.Vulkan
 ```
 
-This part is so crucial to getting started I added it as a hint. After all it is a ~64M file and I know that appears scary at first glance.
+This part is so crucial to getting started that I added it as a hint. After all it is a ~64M file and I know that appears scary at first glance.
 
 ### Decompilation
 
@@ -98,7 +98,7 @@ Program.DecryptModel(ctx, loadResult);
 
 ### Indices on the CPU
 
-It is pretty simple at this point to extract the model resource and then use a Python script to apply the deshuffle and dump all the indices into a `OutputIndices.txt`. I omitted this part but it should be pretty simple. The `.obj` file format is actually extremely readable, here is a peek:
+It is pretty simple at this point to extract the model resource and then use a Python script to apply the deshuffle and dump all the indices into a `OutputIndices.txt`. I omitted this part but it should be straight forward. The `.obj` file format is actually extremely readable, here is a peek:
 
 ```
 o Model
@@ -115,7 +115,7 @@ f 492 1252 1075
 ...
 ```
 
-We can notice now why we needed to unflatten the indices, they are marked by the `f` prefix and are grouped three at a time. Of course, things seem easy now right? That is the luxury of having this code on the CPU. Let's check out the twist part of this challenge.
+We can notice now why we needed to flatten the indices, they are marked by the `f` prefix and are grouped three at a time. Of course, things seem easy now right? That is the luxury of having this code on the CPU. Let's check out the twist part of this challenge.
 
 ### Vertices on the GPU
 
@@ -176,7 +176,7 @@ private static unsafe void CreateCompBuffers(Program.VkCtx ctx, IList<Vertex> ve
 }
 ```
 
-So at this point you should think, hmm, we are decrypting the indices, and the vertices are being sent to the GPU, presumably some operations are unscrambling them, BUT unfortunately they are not being copied back. So it may help you to learn that RenderDoc can actually capture this entire transaction, including what the final buffer on the GPU will be. So fire it up and check out the "Launch Application" tab:
+So at this point you should think, hmm, we are decrypting the indices, and the vertices are being sent to the GPU, presumably some operations are unscrambling them, BUT unfortunately they are not being copied back. So it may help you to learn that RenderDoc can actually capture this entire transaction, including what the final buffer on the GPU will be. So fire RenderDoc up and check out the "Launch Application" tab:
 
 ![renderdoc](https://user-images.githubusercontent.com/20666629/160323024-36dca19f-a835-4683-8875-74a1c0da84bd.png)
 
