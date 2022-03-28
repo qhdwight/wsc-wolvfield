@@ -4,7 +4,7 @@ reverse medium/hard, 4 solves, 500 points
 
 ### Motivation
 
-I wrote this challenge since I found that GPU code hasn't appeared to much in the average CTF. That combined with my love for video game design I figured this would be a pretty cool challenge!
+I wrote this challenge since I found that GPU code hasn't appeared too much in the average CTF. That combined with my love for video game design I figured this would be a pretty cool challenge!
 
 ### First Looks
 
@@ -29,7 +29,7 @@ Silk.NET.Core.Native
 Silk.NET.Vulkan
 ```
 
-This part is so crucial to getting started I added it as a hint. After all it is a ~64M file and I know that appears scary.
+This part is so crucial to getting started I added it as a hint. After all it is a ~64M file and I know that appears scary at first glance.
 
 ### Decompilation
 
@@ -37,7 +37,7 @@ A great open source tool for .NET decompilation is [IL-Spy](https://github.com/i
 
 ![dotPeek](https://user-images.githubusercontent.com/20666629/160321511-036841ba-9672-408a-ac0d-0edee7a97549.png)
 
-Scrolling past all of the `System*` namespaces we can find the `WolvField` one pretty easily. Inside we find a class called `Program`. There seems to be a lot of functions setting up Vulkan via the SILK.NET API. Going even further, we find the functions `Main`, `DecryptModel`, and `DeShuffle<T>` which seem pretty interesting to us based off of the challenge description "It seems they left some secret assets hidden in the executable..."
+Scrolling past all of the `System*` namespaces we can find the `WolvField` one pretty easily. Inside we find a class called `Program`. There seems to be a lot of functions setting up Vulkan via the SILK.NET API. Going even further, we find the functions `Main`, `DecryptModel`, and `DeShuffle<T>` which seem pretty interesting to us based off of the challenge description "It seems they left some secret assets hidden in the executable..." Generally speaking when I reverse CTF challenges I make sure to ask  myself, "How important really is this function in the overall picture?" And in this case, reversing most of the functions inside of `Program` would be useless. So let's check out the critical ones:
 
 ```csharp
     private static int[] GetShuffleExchanges(int size, int key)
@@ -96,9 +96,9 @@ Program.DecryptModel(ctx, loadResult);
 ((IList<uint>) ((IEnumerable<Face>) Enumerable.First<Group>((IEnumerable<Group>) obj.Groups).Faces).GetFlatIndices()).DeShuffle<uint>(1337);
 ```
 
-### CPU Time
+### Indices on the CPU
 
-It is pretty simple at this point to extract the model resource and then use a Python script to apply the deshuffle and dump all the indices into a `OutputIndices.txt`. The `.obj` file format is actually extremely simple, here is a peek:
+It is pretty simple at this point to extract the model resource and then use a Python script to apply the deshuffle and dump all the indices into a `OutputIndices.txt`. I omitted this part but it should be pretty simple. The `.obj` file format is actually extremely readable, here is a peek:
 
 ```
 o Model
@@ -117,7 +117,7 @@ f 492 1252 1075
 
 We can notice now why we needed to unflatten the indices, they are marked by the `f` prefix and are grouped three at a time. Of course, things seem easy now right? That is the luxury of having this code on the CPU. Let's check out the twist part of this challenge.
 
-### GPU Time
+### Vertices on the GPU
 
 A crucial part is to recognize this pattern in `Main`:
 
@@ -190,7 +190,7 @@ Selecting the `vkCmdDispatch` event on the left hand, and selecting the `Pipelin
 
 ![renderdoc csv](https://user-images.githubusercontent.com/20666629/160323446-90fbe356-643a-4f8a-ad57-5d237a7004fa.png)
 
-Now I will make the script that puts these dumpted vertices and indices together and creates a `.obj` file we can easily open in Blender.
+Now I will make the script that puts these dumped vertices and indices together and creates a `.obj` file we can easily open in Blender.
 
 ```python
 from itertools import zip_longest
@@ -221,6 +221,6 @@ There we go! We got the flag!
 
 ### Notes
 
-I really wanted to make a Linux executable for this challenge. But it turns out capturing headless computes on the Linux build of RenderDoc is currently broken. So I didn't really want to throw people off track with that. Theoretically you could have just extracted the shader and done everything yourself (I know at least one team did that), which works too.
+I really wanted to make a Linux executable for this challenge. But it turns out capturing headless computes on the Linux build of RenderDoc is currently broken. So I didn't really want to throw people off track with that. Theoretically you could have just extracted the shader and done everything yourself (I know at least one team did that), which works too. I know some people also used the `spirv-cross` tools to disassemble the `SPIR-V` shader into `GLSL` then write a CPU program that emulated the behavior. Pretty smart.
 
 This was my first major CTF challenge! Let me know how you enjoyed it, feedback is always appreciated :)
